@@ -93,9 +93,7 @@ public class SampleDataUtil {
         p6.setModules(getModuleSet("CS1101S"));
         p6.setCcas(getCcaSet("NUS Chess Club"));
 
-        return new Person[] {
-                p1, p2, p3, p4, p5, p6
-        };
+        return new Person[] {p1, p2, p3, p4, p5, p6};
     }
 
     public static ReadOnlyConnectUs getSampleConnectUs() {
