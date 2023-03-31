@@ -1,6 +1,11 @@
 package seedu.connectus.ui;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,6 +21,8 @@ import seedu.connectus.logic.Logic;
 import seedu.connectus.logic.commands.CommandResult;
 import seedu.connectus.logic.commands.exceptions.CommandException;
 import seedu.connectus.logic.parser.exceptions.ParseException;
+import seedu.connectus.model.person.Birthday;
+import seedu.connectus.model.person.Person;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -66,6 +73,7 @@ public class MainWindow extends UiPart<Stage> {
         setAccelerators();
 
         helpWindow = new HelpWindow();
+
     }
 
     public Stage getPrimaryStage() {
@@ -78,6 +86,7 @@ public class MainWindow extends UiPart<Stage> {
 
     /**
      * Sets the accelerator of a MenuItem.
+     *
      * @param keyCombination the KeyCombination value of the accelerator
      */
     private void setAccelerator(MenuItem menuItem, KeyCombination keyCombination) {
@@ -140,6 +149,7 @@ public class MainWindow extends UiPart<Stage> {
      */
     @FXML
     public void handleHelp() {
+
         if (!helpWindow.isShowing()) {
             helpWindow.show();
         } else {
@@ -149,6 +159,36 @@ public class MainWindow extends UiPart<Stage> {
 
     void show() {
         primaryStage.show();
+
+        Stream<Person> model = logic.getFilteredPersonList().stream();
+        List<Person> modelList = model.filter(person -> {
+            Optional<Birthday> birthday = person.getBirthday();
+            if (!birthday.isPresent()) {
+                return false;
+            }
+
+            LocalDate bd = birthday.get().getValue();
+            LocalDate today = LocalDate.now();
+
+            if (bd.getDayOfYear() - today.getDayOfYear() <= 7 && bd.getDayOfYear() - today.getDayOfYear() >= 0) {
+                return true;
+            }
+
+            return false;
+        }).collect(Collectors.toList());
+
+        if (modelList.isEmpty()) {
+            return;
+        }
+
+        // get first person from the list;
+        Person person = modelList.get(0);
+        String toastMsg = String.format("%s's birthday is \n coming up in %d days!", person.getName(),
+                person.getBirthday().get().getValue().getDayOfYear() - LocalDate.now().getDayOfYear());
+        int toastMsgTime = 5500; // 3.5 seconds
+        int fadeInTime = 500; // 0.5 seconds
+        int fadeOutTime = 500; // 0.5 seconds
+        Toast.makeText(getPrimaryStage(), toastMsg, toastMsgTime, fadeInTime, fadeOutTime);
     }
 
     /**
